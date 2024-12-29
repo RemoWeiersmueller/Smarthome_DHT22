@@ -40,7 +40,7 @@ import os
 DHT_TYPE = adafruit_dht.DHT22
 
 # Example of sensor connected to Raspberry Pi Pin 23
-DHT_PIN  = board.D4
+DHT_PIN = board.D4
 
 # Initialize the dht device, with data pin connected to:
 dhtDevice = DHT_TYPE(DHT_PIN)
@@ -82,29 +82,39 @@ print('Press Ctrl-C to quit.')
 worksheet = login_open_sheet(GDOCS_SPREADSHEET_NAME)
 
 while True:
-    # Attempt to get sensor reading.
-    temp = dhtDevice.temperature
-    humidity = dhtDevice.humidity
+    try:
+        # Attempt to get sensor reading.
+        temp = dhtDevice.temperature
+        humidity = dhtDevice.humidity
 
-    # Skip to the next reading if a valid measurement couldn't be taken.
-    if humidity is None or temp is None:
+        # Skip to the next reading if a valid measurement couldn't be taken.
+        if humidity is None or temp is None:
+            time.sleep(2)
+            continue
+
+        print('Temperature: {0:0.1f} C'.format(temp))
+        print('Humidity:    {0:0.1f} %'.format(humidity))
+
+        # Format the current timestamp to MM/DD/YYYY HH:MM:SS
+        timestamp = datetime.datetime.now().strftime('%m/%d/%Y %H:%M:%S')
+
+        # Append the data in the spreadsheet, including a formatted timestamp
+        try:
+            worksheet.append_row((timestamp, temp, humidity))
+        except Exception as ex:
+            # Error appending data, most likely because credentials are stale.
+            # Null out the worksheet so a login is performed at the top of the loop.
+            print('Append error, logging in again:', ex)
+            worksheet = None
+            time.sleep(FREQUENCY_SECONDS)
+            continue
+
+        # Wait before continuing
+        print('Wrote a row to {0}'.format(GDOCS_SPREADSHEET_NAME))
+        time.sleep(FREQUENCY_SECONDS)
+
+    except RuntimeError as e:
+        # Handle checksum errors and retry
+        print("RuntimeError:", e)
         time.sleep(2)
         continue
-
-    print('Temperature: {0:0.1f} C'.format(temp))
-    print('Humidity:    {0:0.1f} %'.format(humidity))
-
-    # Append the data in the spreadsheet, including a timestamp
-    try:
-        worksheet.append_row((datetime.datetime.now().isoformat(), temp, humidity))
-    except Exception as ex:
-        # Error appending data, most likely because credentials are stale.
-        # Null out the worksheet so a login is performed at the top of the loop.
-        print('Append error, logging in again:', ex)
-        worksheet = None
-        time.sleep(FREQUENCY_SECONDS)
-        continue
-
-    # Wait before continuing
-    print('Wrote a row to {0}'.format(GDOCS_SPREADSHEET_NAME))
-    time.sleep(FREQUENCY_SECONDS)
