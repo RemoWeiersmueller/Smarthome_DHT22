@@ -70,7 +70,7 @@ dhtDevice = DHT_TYPE(DHT_PIN)
 GDOCS_OAUTH_JSON       = 'Credentials_OAuth.json'
 
 # Google Docs spreadsheet name.
-GDOCS_SPREADSHEET_NAME = 'DHT'
+GDOCS_SPREADSHEET_NAME = 'DHT22'
 
 # How long to wait (in seconds) between measurements.
 FREQUENCY_SECONDS      = 30
