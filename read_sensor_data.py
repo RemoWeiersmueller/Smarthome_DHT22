@@ -56,10 +56,7 @@ def open_url_files(dir_path, sensor_list):
 
 ### Open the file to write out
 def open_output_file():
-    # Get the directory containing the script
-    script_dir = os.path.dirname(os.path.realpath(__file__))
-    # Create output directory path
-    output_dir = os.path.join(script_dir, "output")
+    output_dir = os.path.join(os.path.realpath(__file__), "output")
     output_file_path = os.path.join(output_dir, "sensor_output.csv")
 
     if not os.path.exists(output_dir):
